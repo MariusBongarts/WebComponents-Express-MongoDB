@@ -1,0 +1,54 @@
+version: '3.6'
+services:
+  client:
+    container_name: app-client
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    environment:
+      client_PORT: 8080
+      API_HOST: 'http://localhost:8080'
+    ports:
+      - 8080:8080
+    volumes:
+      - ./client/src:/app/src/
+  server:
+    container_name: app-server
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    environment:
+      - client_PORT=3443
+      - API_HOST=http://localhost:3443
+      - MONGO_USER=${MONGO_USER}
+      - MONGO_PASSWORD=${MONGO_PASSWORD}
+      - MONGO_INITDB_DATABASE=${MONGO_INITDB_DATABASE}
+    ports:
+      - 3443:3443
+    volumes:
+      - ./server/src:/app/src/
+    links:
+      - app-mongodb
+  app-mongodb:
+    container_name: app-mongodb
+    image: mongo
+    ports:
+      - '27017:27017'
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD}
+      - MONGO_USER=${MONGO_USER}
+      - MONGO_PASSWORD=${MONGO_PASSWORD}
+      - MONGO_INITDB_DATABASE=${MONGO_INITDB_DATABASE}
+      - ADMIN_USER=${ADMIN_USER}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+    command: mongod
+    volumes:
+      - mongodata:/data/db
+      - mongodb_config:/data/configdb
+      - ./mongodb/:/docker-entrypoint-initdb.d/
+
+# Create volume for mongodb data because volume mounting is not working for windows machines
+volumes:
+  mongodata:
+  mongodb_config:

@@ -1,0 +1,5 @@
+dist/
+e2e/**/*.js
+coverage/
+src/**/*.js
+src/**/*.js.map
